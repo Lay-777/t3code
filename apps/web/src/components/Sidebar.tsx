@@ -1,3 +1,4 @@
+import { translateActive } from "@t3tools/shared/i18n";
 import { attachSidebarTree } from "../lib/sidebarTree";
 import { type EnvironmentId, type ScopedProjectRef } from "@t3tools/contracts";
 import type { EnvironmentServerConfig } from "@t3tools/client-runtime/connection";
@@ -2828,7 +2829,9 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
           case "archive": {
             if (confirmThreadArchive) {
               const confirmed = await settlePromise(() =>
-                api.dialogs.confirm(`Archive thread "${thread.title}"?`),
+                api.dialogs.confirm(
+                  translateActive('Archive thread "{title}"?', { title: thread.title }),
+                ),
               );
               if (confirmed._tag === "Failure" || !confirmed.value) return;
             }
@@ -2858,8 +2861,10 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
               const confirmed = await settlePromise(() =>
                 api.dialogs.confirm(
                   [
-                    `Delete thread "${thread.title}"?`,
-                    "This permanently clears conversation history for this thread.",
+                    translateActive('Delete thread "{title}"?', { title: thread.title }),
+                    translateActive(
+                      "This permanently clears conversation history for this thread.",
+                    ),
                   ].join("\n"),
                   { variant: "destructive" },
                 ),

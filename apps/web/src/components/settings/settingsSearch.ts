@@ -1,3 +1,5 @@
+import type { AppLocale } from "@t3tools/shared/i18n";
+import { translate } from "@t3tools/shared/i18n";
 import { HOSTED_APP_CHANNEL } from "~/branding";
 import { isElectron, isSecretsFeatureEnabled } from "~/env";
 import { isMacPlatform, isWindowsPlatform, normalizeSearchText } from "~/lib/utils";
@@ -224,6 +226,12 @@ const SOURCE_CONTROL_HOST_TERMS = sourceControlClients.definitions
   .join(" ");
 
 export const SETTINGS_SEARCH_ITEMS = [
+  {
+    id: "display-language",
+    title: "Display language",
+    to: "/settings/general",
+    searchTerms: ["language locale chinese 中文 简体 english translation 语言 界面"],
+  },
   {
     id: "storage-worktree-keep-when",
     targetId: "storage-worktrees",
@@ -1506,6 +1514,7 @@ export function settingsForThisPlatform(
 export function searchSettings(
   query: string,
   items: ReadonlyArray<SettingsSearchItem> = SETTINGS_SEARCH_ITEMS,
+  locale: AppLocale = "en",
 ): ReadonlyArray<SettingsSearchItem> {
   const normalizedQuery = normalizeSearchText(query);
   if (normalizedQuery.length === 0) return [];
@@ -1517,6 +1526,12 @@ export function searchSettings(
       const fields = [
         title,
         normalizeSearchText(SETTINGS_SECTION_LABELS[item.to]),
+        ...(locale === "en"
+          ? []
+          : [
+              normalizeSearchText(translate(locale, item.title)),
+              normalizeSearchText(translate(locale, SETTINGS_SECTION_LABELS[item.to])),
+            ]),
         ...(item.searchTerms ?? []).map(normalizeSearchText),
       ];
       if (!queryTokens.every((token) => fields.some((field) => field.includes(token)))) return [];

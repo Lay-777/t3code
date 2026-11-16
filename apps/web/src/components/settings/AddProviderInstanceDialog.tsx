@@ -3,6 +3,7 @@ import { ProviderInstanceIcon } from "../chat/ProviderInstanceIcon";
 import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
+import { useTranslate } from "../../i18n/locale";
 import {
   deriveAvailableInstanceId,
   deriveInstanceId,
@@ -153,6 +154,7 @@ export function AddProviderInstanceDialog({
   onCreated,
   showMoreProviders: initialShowMoreProviders = false,
 }: AddProviderInstanceDialogProps) {
+  const { t } = useTranslate();
   const settings = useEnvironmentSettings(environmentId);
   const secretSources = useSecretSources(environmentId);
   const persistProviderInstance = usePersistEnvironmentProviderInstanceMutation(environmentId);
@@ -238,13 +240,13 @@ export function AddProviderInstanceDialog({
   const acpSelectionError = isLocalAcp
     ? localCommandPath.length > 0
       ? null
-      : "Executable is required."
+      : t("Executable is required.")
     : selectedAcp !== null || (isManualAcpConfiguration && manualAgentId.length > 0)
       ? null
-      : "Select an ACP or configure one manually.";
+      : t("Select an ACP or configure one manually.");
   const wizardStepSummaries = isAcpRegistry
     ? ([
-        isLocalAcp ? "Local ACP command" : (selectedAcp?.name ?? (manualAgentId || null)),
+        isLocalAcp ? t("Local ACP command") : (selectedAcp?.name ?? (manualAgentId || null)),
         previewLabel,
         null,
       ] as const)
@@ -403,8 +405,8 @@ export function AddProviderInstanceDialog({
       setIsSaving(false);
       toastManager.add({
         type: "error",
-        title: "Could not add provider instance",
-        description: error instanceof Error ? error.message : "The settings update failed.",
+        title: t("Could not add provider instance"),
+        description: error instanceof Error ? error.message : t("The settings update failed."),
       });
       return;
     }
@@ -437,7 +439,7 @@ export function AddProviderInstanceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <WizardPopup size="wide">
         <WizardHeader
-          title="Add provider"
+          title={t("Add provider")}
           description={<>Add an account or configure a provider on {environmentLabel}.</>}
         >
           {isAcpRegistry ? (
@@ -490,7 +492,7 @@ export function AddProviderInstanceDialog({
                 <Collapsible open={showMoreProviders} onOpenChange={setShowMoreProviders}>
                   <div className="flex pt-2">
                     <CollapsibleTrigger render={<Button variant="ghost-muted" size="xs" />}>
-                      {showMoreProviders ? "Show less" : "Show more"}
+                      {showMoreProviders ? t("Show less") : t("Show more")}
                       <ChevronDownIcon
                         aria-hidden
                         className={cn("transition-transform", showMoreProviders && "rotate-180")}
@@ -505,12 +507,12 @@ export function AddProviderInstanceDialog({
                         value={driver}
                         disabled={isPreparingRegistryAgent}
                         onValueChange={selectDriver}
-                        aria-label="More providers"
+                        aria-label={t("More providers")}
                       />
                       {!acpRegistryAllowed ? null : (
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           <div aria-hidden className="flex-1 border-t border-border/70" />
-                          <span>Or choose from ACP Registry</span>
+                          <span>{t("Or choose from ACP Registry")}</span>
                           <div aria-hidden className="flex-1 border-t border-border/70" />
                         </div>
                       )}
@@ -519,12 +521,16 @@ export function AddProviderInstanceDialog({
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <h3 className="text-sm font-medium text-foreground">
-                                {isLocalAcp ? "Local ACP command" : "Enter manually"}
+                                {isLocalAcp ? t("Local ACP command") : t("Enter manually")}
                               </h3>
                               <p className="mt-0.5 text-xs text-muted-foreground">
                                 {isLocalAcp
-                                  ? `Run an installed ACP executable on ${environmentLabel}.`
-                                  : "Enter an official registry ID and any local executable or auth override."}
+                                  ? t("Run an installed ACP executable on {name}.", {
+                                      name: environmentLabel,
+                                    })
+                                  : t(
+                                      "Enter an official registry ID and any local executable or auth override.",
+                                    )}
                               </p>
                             </div>
                             <Button
@@ -535,7 +541,7 @@ export function AddProviderInstanceDialog({
                               size="xs"
                               variant="ghost"
                             >
-                              Search registry
+                              {t("Search registry")}
                             </Button>
                           </div>
                           <SettingsGroup variant="plain">
@@ -724,12 +730,12 @@ export function AddProviderInstanceDialog({
                   setWizardStep((step) => Math.max(0, step - 1));
                 }}
               >
-                {wizardStep === 0 ? "Cancel" : "Back"}
+                {wizardStep === 0 ? t("Cancel") : t("Back")}
               </Button>
               {wizardStep === 0 && driver === "codex" ? (
                 <>
                   <Button variant="outline" size="sm" onClick={() => navigateToStep(1)}>
-                    Configure manually
+                    {t("Configure manually")}
                   </Button>
                   {driverLocks?.configKeys.has("setupMode") ? null : (
                     <ChatGptConnectionButton
@@ -744,7 +750,7 @@ export function AddProviderInstanceDialog({
                   disabled={isPreparingRegistryAgent}
                   onClick={() => navigateToStep(wizardStep + 1)}
                 >
-                  Next
+                  {t("Next")}
                 </Button>
               ) : (
                 <Button
@@ -753,10 +759,10 @@ export function AddProviderInstanceDialog({
                   onClick={() => void handleSave()}
                 >
                   {isSaving
-                    ? "Adding..."
+                    ? t("Adding...")
                     : isAcpRegistry && !isLocalAcp
-                      ? "Continue to sign-in"
-                      : "Add instance"}
+                      ? t("Continue to sign-in")
+                      : t("Add instance")}
                 </Button>
               )}
             </WizardFooter>

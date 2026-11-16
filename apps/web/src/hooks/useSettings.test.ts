@@ -166,6 +166,22 @@ describe("client settings hydration", () => {
   });
 });
 
+describe("display language persistence", () => {
+  it("restores a saved language and publishes the next choice immediately", async () => {
+    persistenceMocks.getClientSettings.mockResolvedValue({
+      ...DEFAULT_CLIENT_SETTINGS,
+      uiLocale: "zh-CN",
+    });
+    await ensureClientSettingsHydrated();
+    expect(getClientSettings().uiLocale).toBe("zh-CN");
+
+    const persist = vi.fn(async () => undefined);
+    await persistClientSettingsPatch({ uiLocale: "en" }, persist);
+    expect(getClientSettings().uiLocale).toBe("en");
+    expect(persist).toHaveBeenCalledWith(expect.objectContaining({ uiLocale: "en" }));
+  });
+});
+
 describe("persistClientSettingsPatch", () => {
   it("waits for settings writes in request order", async () => {
     __setClientSettingsForTests(DEFAULT_CLIENT_SETTINGS);

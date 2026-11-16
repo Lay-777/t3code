@@ -62,7 +62,6 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
-  type ReactNode,
 } from "react";
 
 import { useRightPanelStore } from "../../rightPanelStore";
@@ -77,6 +76,7 @@ import { readEnvironmentScope, useEnvironmentScope } from "../../state/session";
 import { formatRelativeTimeLabel, parseTimestampDate } from "../../timestampFormat";
 import type { SidebarThreadSummary } from "../../types";
 import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
+import { useTranslate } from "../../i18n/locale";
 import { cn } from "~/lib/utils";
 import { textDirection } from "~/textDirection";
 import { EnvironmentMachineIcon } from "../EnvironmentMachineIcon";
@@ -492,38 +492,35 @@ export function SortableThreadRow(
   return <SidebarThreadRow key={rowProps.variant} {...rowProps} thread={thread} sortable={bag} />;
 }
 export type SidebarSweepAction = "settle" | "unsettle" | "unsnooze";
-const dropVerbBadge: Record<SidebarDropVerb, ReactNode> = {
-  pin: (
-    <>
+const DROP_VERB_LABEL = {
+  pin: "Pin",
+  unpin: "Unpin",
+  settle: "Settle",
+  unsettle: "Un-settle",
+  wake: "Wake",
+} as const satisfies Record<SidebarDropVerb, string>;
+
+function DropVerbBadge({ verb }: { readonly verb: SidebarDropVerb }) {
+  const { t } = useTranslate();
+  const icon =
+    verb === "pin" ? (
       <PinIcon aria-hidden className="size-3" />
-      Pin
-    </>
-  ),
-  unpin: (
-    <>
+    ) : verb === "unpin" ? (
       <PinOffIcon aria-hidden className="size-3" />
-      Unpin
-    </>
-  ),
-  settle: (
-    <>
+    ) : verb === "settle" ? (
       <CircleCheckIcon aria-hidden className="size-3" />
-      Settle
-    </>
-  ),
-  unsettle: (
-    <>
+    ) : verb === "unsettle" ? (
       <Undo2Icon aria-hidden className="size-3" />
-      Un-settle
-    </>
-  ),
-  wake: (
-    <>
+    ) : (
       <AlarmClockOffIcon aria-hidden className="size-3" />
-      Wake
+    );
+  return (
+    <>
+      {icon}
+      {t(DROP_VERB_LABEL[verb])}
     </>
-  ),
-};
+  );
+}
 
 const TOP_STATUS_ICONS = {
   working: CircleDashedIcon,
@@ -1012,7 +1009,7 @@ const SidebarThreadRow = memo(function SidebarThreadRow(props: SidebarThreadRowP
         role="status"
         className="pointer-events-none ml-auto inline-flex h-5 shrink-0 items-center gap-1 rounded-sm border border-primary/40 bg-primary/10 px-1.5 text-2xs font-medium text-primary"
       >
-        {dropVerbBadge[destinationVerb]}
+        <DropVerbBadge verb={destinationVerb} />
       </span>
     ) : null;
 

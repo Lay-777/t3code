@@ -1,3 +1,4 @@
+import { useTranslate } from "../../i18n/locale";
 import {
   WorkspaceBreadcrumb,
   WorkspaceBreadcrumbItem,
@@ -17,18 +18,19 @@ function settingsBreadcrumbLabel(pathname: string): string | null {
 }
 
 export function SettingsBreadcrumb({ pathname }: { pathname: string }) {
+  const { t } = useTranslate();
   const sectionLabel = settingsBreadcrumbLabel(pathname);
 
   return (
-    <WorkspaceBreadcrumb ariaLabel="Settings breadcrumb">
+    <WorkspaceBreadcrumb ariaLabel={t("Settings breadcrumb")}>
       {sectionLabel ? (
         <>
-          <WorkspaceBreadcrumbItem>Settings</WorkspaceBreadcrumbItem>
+          <WorkspaceBreadcrumbItem>{t("Settings")}</WorkspaceBreadcrumbItem>
           <WorkspaceBreadcrumbSeparator />
         </>
       ) : null}
-      <WorkspaceBreadcrumbItem current className="truncate">
-        {sectionLabel ?? "Settings"}
+      <WorkspaceBreadcrumbItem current className="max-w-full text-pretty whitespace-normal">
+        {sectionLabel ? t(sectionLabel) : t("Settings")}
       </WorkspaceBreadcrumbItem>
     </WorkspaceBreadcrumb>
   );

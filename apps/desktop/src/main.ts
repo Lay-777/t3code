@@ -18,6 +18,7 @@ import * as Option from "effect/Option";
 
 import * as Electron from "electron";
 
+import { lockUnofficialEdition } from "@t3tools/shared/edition";
 import * as NetService from "@t3tools/shared/Net";
 import * as HostProcess from "@t3tools/shared/HostProcess";
 import type { RemoteT3RunnerOptions } from "@t3tools/ssh/tunnel";
@@ -79,6 +80,8 @@ import * as DesktopWindow from "./window/DesktopWindow.ts";
 import * as DesktopWslBackend from "./wsl/DesktopWslBackend.ts";
 import * as DesktopWslEnvironment from "./wsl/DesktopWslEnvironment.ts";
 import * as DesktopWslServerTree from "./wsl/DesktopWslServerTree.ts";
+
+lockUnofficialEdition(process.env);
 
 if (process.argv.includes("--version")) {
   try {

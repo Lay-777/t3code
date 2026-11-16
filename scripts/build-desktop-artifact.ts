@@ -15,6 +15,11 @@ import {
   type DirectoryRecord,
 } from "@electron/asar";
 
+import {
+  EDITION_APP_ID,
+  EDITION_PRODUCT_NAME,
+  EDITION_PROTOCOL_SCHEME,
+} from "@t3tools/shared/edition";
 import { fromYaml } from "@t3tools/shared/schemaYaml";
 import * as HostProcess from "@t3tools/shared/HostProcess";
 import { clerkFrontendApiHostnameFromPublishableKey } from "@t3tools/shared/relayAuth";
@@ -62,7 +67,7 @@ import { Command, Flag } from "effect/cli";
 import { ChildProcess, ChildProcessSpawner } from "effect/process";
 
 const LINUX_ICON_SIZES = [16, 22, 24, 32, 48, 64, 128, 256, 512] as const;
-const DESKTOP_APP_ID = "com.t3tools.t3code";
+const DESKTOP_APP_ID = EDITION_APP_ID;
 const APPLE_TEAM_ID_PATTERN = /^[A-Z0-9]{10}$/u;
 
 const BuildPlatform = Schema.Literals(["mac", "linux", "win"]);
@@ -2757,10 +2762,8 @@ export function resolvePackageManagerUserAgent(packageManager: string): string {
   return `${trimmed.slice(0, versionSeparator)}/${trimmed.slice(versionSeparator + 1)}`;
 }
 
-export function resolveDesktopProductName(version: string): string {
-  return resolveDesktopUpdateChannel(version) === "nightly"
-    ? "T3 Code (Nightly)"
-    : (desktopPackageJson.productName ?? "T3 Code");
+export function resolveDesktopProductName(_version: string): string {
+  return desktopPackageJson.productName ?? EDITION_PRODUCT_NAME;
 }
 
 export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
@@ -2783,7 +2786,7 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
     afterPack: (yield* Path.Path).join(yield* RepoRoot, "scripts/prepare-server-compile-cache.cjs"),
     appId: DESKTOP_APP_ID,
     productName: resolveDesktopProductName(version),
-    artifactName: "T3-Code-${version}-${arch}.${ext}",
+    artifactName: "T3-Code-Bilingual-Test-${version}-${arch}.${ext}",
     electronLanguages: [...DESKTOP_ELECTRON_LANGUAGES],
     files: [
       ...DESKTOP_FILE_EXCLUSIONS,
@@ -2809,21 +2812,15 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
     ],
   };
   const updateChannel = resolveDesktopUpdateChannel(version);
-  // Missing publish config infers a GitHub feed from tokens; staging has no repository, so manifest generation would crash.
-  buildConfig.publish = null;
-  if (!isDesktopPreviewVersion(version)) {
-    const publishConfig = yield* resolveGitHubPublishConfig(updateChannel);
-    if (publishConfig) {
-      buildConfig.publish = [publishConfig];
-    } else if (mockUpdates) {
-      buildConfig.publish = [
-        {
-          provider: "generic",
-          url: resolveMockUpdateServerUrl(mockUpdateServerPort),
-        },
-      ];
-    }
+  // Resolve the feed the official app would use, then drop it. Publishing it would let
+  // electron-updater replace this install with official T3 Code.
+  const discardedFeed = isDesktopPreviewVersion(version)
+    ? undefined
+    : yield* resolveGitHubPublishConfig(updateChannel);
+  if (discardedFeed !== undefined || mockUpdates || mockUpdateServerPort !== undefined) {
+    buildConfig.publish = null;
   }
+  buildConfig.publish = null;
 
   if (platform === "mac") {
     const path = yield* Path.Path;
@@ -2863,7 +2860,7 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
       protocols: [
         {
           name: "T3 Code",
-          schemes: ["t3code", "t3code-dev"],
+          schemes: [EDITION_PROTOCOL_SCHEME],
         },
         {
           name: "Web site URL",
@@ -2908,7 +2905,7 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
     buildConfig.afterPack = path.join(repoRoot, "scripts/linux-after-pack.ts");
     buildConfig.linux = {
       target: target === "AppImage" ? [target, "deb"] : [target],
-      executableName: "t3code",
+      executableName: "t3code-bilingual-test",
       icon: "icons",
       category: "Development",
       synopsis: "Desktop GUI for coding agents",
@@ -2916,12 +2913,12 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
       protocols: [
         {
           name: "T3 Code",
-          schemes: ["t3code", "t3code-dev"],
+          schemes: [EDITION_PROTOCOL_SCHEME],
         },
       ],
       desktop: {
         entry: {
-          StartupWMClass: "t3code",
+          StartupWMClass: "t3code-bilingual-test",
         },
       },
     };
@@ -2951,8 +2948,18 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
   if (platform === "win") {
     buildConfig.npmRebuild = false;
     buildConfig.nsis = {
-      differentialPackage: true,
+      // Differential packages are built against the official feed. This edition ships full installers only.
+      differentialPackage: false,
+      oneClick: false,
+      perMachine: false,
+      allowToChangeInstallationDirectory: true,
+      shortcutName: EDITION_PRODUCT_NAME,
+      uninstallDisplayName: `${EDITION_PRODUCT_NAME} (unofficial)`,
       include: "apps/desktop/resources/installer.nsh",
+      // Do not take over the official app's file or URL associations.
+      createDesktopShortcut: true,
+      createStartMenuShortcut: true,
+      menuCategory: false,
     };
     const winConfig: Record<string, unknown> = {
       target: [target],

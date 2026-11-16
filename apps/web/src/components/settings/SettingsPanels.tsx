@@ -31,6 +31,7 @@ import { resolvePastedPath } from "@t3tools/shared/path";
 import * as Equal from "effect/Equal";
 import * as Schema from "effect/Schema";
 import { APP_VERSION, HOSTED_APP_CHANNEL, HOSTED_APP_CHANNEL_LABEL } from "../../branding";
+import { useTranslate } from "../../i18n/locale";
 import { AboutVersionTitle } from "./AboutVersionTitle";
 import { CliCommandSettingsRow } from "./CliCommandSettingsRow";
 import { MobileAppSettingsRow } from "./MobileAppSettingsRow";
@@ -760,6 +761,7 @@ function AutoSettleDaysInput({
 }
 
 export function GeneralSettingsPanel() {
+  const { t } = useTranslate();
   const settings = useScopedSettings();
   const updateSettings = useUpdateScopedSettings();
   const lastEnabledProjectGroupingMode = useRef<SidebarProjectGroupingMode>(
@@ -768,6 +770,43 @@ export function GeneralSettingsPanel() {
 
   return (
     <SettingsPageContainer>
+      <SettingsSection id="language" title="Language">
+        <p className="px-3 text-xs text-pretty text-muted-foreground sm:px-4">
+          {t(
+            "Unofficial bilingual test edition. It keeps a separate profile and does not update or replace official T3 Code.",
+          )}
+        </p>
+        <SettingsRow
+          {...searchableSetting("display-language")}
+          description="Switch between English and Simplified Chinese immediately. Untranslated text stays in English. Provider names, commands, paths, and model replies are not translated."
+          control={
+            <Select
+              value={settings.uiLocale === "zh-CN" ? "zh-CN" : "en"}
+              onValueChange={(value) => {
+                if (value === "en" || value === "zh-CN") {
+                  updateSettings({ uiLocale: value });
+                }
+              }}
+            >
+              <SelectTrigger
+                size="sm"
+                className="w-full sm:w-44"
+                aria-label={t("Display language")}
+              >
+                <SelectValue>{settings.uiLocale === "zh-CN" ? "简体中文" : "English"}</SelectValue>
+              </SelectTrigger>
+              <SelectPopup align="end" alignItemWithTrigger={false}>
+                <SelectItem hideIndicator value="en">
+                  English
+                </SelectItem>
+                <SelectItem hideIndicator value="zh-CN">
+                  简体中文
+                </SelectItem>
+              </SelectPopup>
+            </Select>
+          }
+        />
+      </SettingsSection>
       <SettingsSection id="notifications" title="Notifications">
         <NotificationSettings />
         <SettingsRow

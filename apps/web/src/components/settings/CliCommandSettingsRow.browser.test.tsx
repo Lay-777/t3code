@@ -3,11 +3,10 @@ import type { DesktopCliCommandState } from "@t3tools/contracts";
 import { AtomRegistry } from "effect/reactivity";
 import { expect, it, vi } from "vite-plus/test";
 
-import { act, render, stubGlobal } from "../../../test/render";
-import { desktopCliCommandStateAtom } from "../../state/desktopCliCommand";
+import { render, stubGlobal } from "../../../test/render";
 import { CliCommandSettingsRow } from "./CliCommandSettingsRow";
 
-it("blocks installation behind another t3 without blocking removal of our installation", async () => {
+it("does not offer to install t3 over the official command", async () => {
   const state: DesktopCliCommandState = {
     supported: true,
     installedPath: null,
@@ -32,20 +31,7 @@ it("blocks installation behind another t3 without blocking removal of our instal
     </RegistryContext.Provider>,
   );
 
-  await expect.element(screen.getByRole("button", { name: "Install" })).toBeDisabled();
-
-  getState.mockResolvedValue(state);
-  await act(() => registry.refresh(desktopCliCommandStateAtom));
-  await expect.element(screen.getByRole("button", { name: "Install" })).toBeEnabled();
-
-  getState.mockResolvedValue({
-    ...state,
-    installedPath: "/home/test/.local/bin/t3",
-    shadowedBy: "/usr/local/bin/t3",
-  });
-  await act(() => registry.refresh(desktopCliCommandStateAtom));
-  const remove = screen.getByRole("button", { name: "Remove" });
-  await expect.element(remove).toBeEnabled();
-  await remove.click();
-  expect(uninstall).toHaveBeenCalledOnce();
+  await expect.element(screen.getByText(/does not install the t3 command/)).toBeVisible();
+  expect(screen.getByRole("button", { name: "Install" }).query()).toBeNull();
+  expect(uninstall).not.toHaveBeenCalled();
 });

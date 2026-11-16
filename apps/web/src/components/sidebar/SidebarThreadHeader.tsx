@@ -7,6 +7,7 @@ import {
   type RefObject,
 } from "react";
 
+import { useTranslate } from "../../i18n/locale";
 import { cn } from "~/lib/utils";
 import { Button } from "../ui/button";
 import { SidebarInput, SidebarMenuButton } from "../ui/sidebar";
@@ -49,12 +50,13 @@ export function SidebarThreadHeader({
   activeSearchResultIndex,
   onClearSearch,
 }: SidebarThreadHeaderProps) {
+  const { t } = useTranslate();
   const resultsVisible = isSearching && searchResultCount > 0;
   // Shrinking results can remove the active option; never leave aria-activedescendant pointing at it.
   const activeResultExists = resultsVisible && activeSearchResultIndex < searchResultCount;
   const newThreadLabel = newThreadShortcutLabel
-    ? `New thread (${newThreadShortcutLabel})`
-    : "New thread";
+    ? t("New thread ({shortcut})", { shortcut: newThreadShortcutLabel })
+    : t("New thread");
 
   return (
     <div className="flex items-center gap-1">
@@ -67,8 +69,8 @@ export function SidebarThreadHeader({
           value={searchQuery}
           onChange={(event) => onSearchQueryChange(event.currentTarget.value)}
           onKeyDown={onSearchKeyDown}
-          placeholder="Search"
-          aria-label="Search threads"
+          placeholder={t("Search")}
+          aria-label={t("Search threads")}
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={resultsVisible}
@@ -106,13 +108,13 @@ export function SidebarThreadHeader({
           </>
         ) : null}
         <SidebarHeaderIconButton
-          label="New thread"
+          label={t("New thread")}
           tooltip={
             showNewThreadInProjectHint ? (
               <span className="flex flex-col gap-0.5">
                 <span>{newThreadLabel}</span>
                 <span className="text-muted-foreground">
-                  New thread in current project: Shift+click
+                  {t("New thread in current project: Shift+click")}
                   {newThreadInProjectShortcutLabel ? ` (${newThreadInProjectShortcutLabel})` : ""}
                 </span>
               </span>

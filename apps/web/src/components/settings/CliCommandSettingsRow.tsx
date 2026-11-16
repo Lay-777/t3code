@@ -1,4 +1,6 @@
+import { EDITION_INSTALLS_CLI_ON_PATH } from "@t3tools/shared/edition";
 import { useState } from "react";
+import { useTranslate } from "../../i18n/locale";
 
 import {
   desktopCliCommandStateAtom,
@@ -48,9 +50,20 @@ export function useDesktopCliCommand() {
 }
 
 export function CliCommandSettingsRow() {
+  const { t } = useTranslate();
   const { state, busy, run } = useDesktopCliCommand();
 
   if (!state?.supported) return null;
+  if (!EDITION_INSTALLS_CLI_ON_PATH) {
+    return (
+      <SettingsRow
+        {...searchableSetting("cli-command")}
+        description={t(
+          "This unofficial edition does not install the t3 command, so it cannot replace the official T3 Code CLI or change PATH.",
+        )}
+      />
+    );
+  }
   const installed = state.installedPath !== null;
   const description = state.shadowedBy
     ? `Another t3 at ${state.shadowedBy} runs first in a new terminal. Remove it to use T3 Code's.`

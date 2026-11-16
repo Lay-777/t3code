@@ -8,6 +8,9 @@ import { memo, useRef, useState } from "react";
 import { InfoIcon, XIcon } from "lucide-react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button, InlineButton } from "../ui/button";
+import type { AppLocale } from "@t3tools/shared/i18n";
+import { translate } from "@t3tools/shared/i18n";
+import { useTranslate } from "../../i18n/locale";
 import { formatProviderDriverKindLabel } from "../../providerModels";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { serverEnvironment } from "../../state/server";
@@ -65,7 +68,7 @@ export function hasProviderSetup(status: ServerProvider): boolean {
   );
 }
 
-export function getProviderStatusMessage(status: ServerProvider): string {
+export function getProviderStatusMessage(status: ServerProvider, locale: AppLocale = "en"): string {
   if (
     status.auth.status !== "unauthenticated" &&
     status.compatibilityAdvisory?.status === "broken" &&
@@ -75,22 +78,26 @@ export function getProviderStatusMessage(status: ServerProvider): string {
   }
   if (status.message) return status.message;
   const providerName = status.displayName?.trim() || formatProviderDriverKindLabel(status.driver);
+  const t = (message: string, values?: Readonly<Record<string, string | number>>) =>
+    translate(locale, message, values);
   if (!status.installed && hasProviderSetup(status)) {
-    return `Open provider setup to install ${formatProviderDriverKindLabel(status.driver)} on this environment.`;
+    return t("Open provider setup to install {driver} on this environment.", {
+      driver: formatProviderDriverKindLabel(status.driver),
+    });
   }
   if (status.auth.status === "unauthenticated") {
     if (hasProviderSetup(status)) {
       return status.driver === "antigravity"
-        ? "Open provider setup to sign in with Google."
-        : "Open provider setup to sign in.";
+        ? t("Open provider setup to sign in with Google.")
+        : t("Open provider setup to sign in.");
     }
-    return "Sign in via the CLI to authenticate again.";
+    return t("Sign in via the CLI to authenticate again.");
   }
   return status.status === "ready"
-    ? "No models are available for this provider."
+    ? t("No models are available for this provider.")
     : status.status === "error"
-      ? `${providerName} provider is unavailable.`
-      : `${providerName} provider has limited availability.`;
+      ? t("{name} provider is unavailable.", { name: providerName })
+      : t("{name} provider has limited availability.", { name: providerName });
 }
 
 export const ProviderStatusBanner = memo(function ProviderStatusBanner({
@@ -104,6 +111,7 @@ export const ProviderStatusBanner = memo(function ProviderStatusBanner({
   onOpenProviderSetup?: (instanceId: ProviderInstanceId) => void;
   status: ServerProvider | null;
 }) {
+  const { locale } = useTranslate();
   const canRefresh = useAtomValue(serverEnvironment.refreshProviders.permissionAtom(environmentId));
   const refreshProviders = useAtomCommand(serverEnvironment.refreshProviders, {
     label: "Refresh provider status",
@@ -135,7 +143,7 @@ export const ProviderStatusBanner = memo(function ProviderStatusBanner({
     : incompatible
       ? `${providerName} ${status.version ?? ""} is ${incompatible.status === "broken" ? "known to be broken" : "unsupported"}`
       : `${providerName} provider status`;
-  const message = incompatible?.message ?? getProviderStatusMessage(status);
+  const message = incompatible?.message ?? getProviderStatusMessage(status, locale);
   const isWarning =
     incompatible?.status !== "broken" && (status.status === "warning" || incompatible !== null);
 

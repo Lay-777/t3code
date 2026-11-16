@@ -527,6 +527,19 @@ describe("voice settings", () => {
   });
 });
 
+describe("display language", () => {
+  it("defaults to English and keeps a saved Simplified Chinese preference", () => {
+    expect(decodeClientSettings({}).uiLocale).toBe("en");
+    expect(decodeClientSettings({ uiLocale: "zh-CN" }).uiLocale).toBe("zh-CN");
+    expect(encodeClientSettings(decodeClientSettings({ uiLocale: "zh-CN" })).uiLocale).toBe(
+      "zh-CN",
+    );
+    expect(decodeClientSettingsPatch({ uiLocale: "en" })).toEqual({ uiLocale: "en" });
+    expect(decodeClientSettingsPatch({})).not.toHaveProperty("uiLocale");
+    expect(() => decodeClientSettingsPatch({ uiLocale: "es" })).toThrow();
+  });
+});
+
 describe("server model preferences", () => {
   it("distinguishes unmigrated lists from deliberately cleared lists", () => {
     expect(decodeServerSettings({})).toMatchObject({

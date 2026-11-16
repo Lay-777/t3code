@@ -1,4 +1,5 @@
 import { pipe } from "effect/Function";
+import { useTranslate } from "../../i18n/locale";
 import { ACP_REGISTRY_MAX_AGENTS, AuthProvidersManageScope } from "@t3tools/contracts";
 import { readEnvironmentScope, useEnvironmentScope } from "../../state/session";
 import {
@@ -137,6 +138,7 @@ export function AcpRegistrySearchStep({
   onManualConfiguration,
   onLocalConfiguration,
 }: AcpRegistrySearchStepProps) {
+  const { t } = useTranslate();
   const canManageProviders = useEnvironmentScope(environmentId, AuthProvidersManageScope);
   const { query, search, preparingId, prepareError } = registry;
 
@@ -183,7 +185,7 @@ export function AcpRegistrySearchStep({
           type="button"
           variant="ghost-muted"
         >
-          Enter manually
+          {t("Enter manually")}
         </Button>
         {onLocalConfiguration ? (
           <Button
@@ -193,7 +195,7 @@ export function AcpRegistrySearchStep({
             type="button"
             variant="outline"
           >
-            Local ACP command
+            {t("Local ACP command")}
           </Button>
         ) : null}
       </form>
