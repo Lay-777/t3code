@@ -1,5 +1,18 @@
 # T3 Code
 
+> **Unofficial bilingual test edition.** This branch of [Lay-777/t3code](https://github.com/Lay-777/t3code) is a Simplified Chinese / English test build based on T3 Code **v0.1.9**. It is not an official T3 Tools release and is not sent upstream. The [MIT license](./LICENSE) and T3 Tools copyright are unchanged.
+>
+> It uses its own install name (`T3 Code Bilingual Test`), app id (`com.t3tools.t3code.bilingual-test`), Electron profile, and data directory (`~/.t3-bilingual-test` on macOS/Linux, `%USERPROFILE%\.t3-bilingual-test` on Windows). It does not read official `~/.t3`, does not install the `t3` command onto PATH, does not register the `t3code://` protocol, and does not auto-update. Provider sign-in has to be done again in this profile.
+>
+> Windows x64 unsigned installer, from a Windows machine with this branch, Node `26.12.1`, and the repo's `vp` toolchain:
+>
+> ```powershell
+> vp i
+> vp run dist:desktop:win:x64
+> ```
+>
+> The NSIS installer is per-user, asks for a directory, and is named `T3-Code-Bilingual-Test-<version>-x64.exe`. It does not publish an update feed. A portable zip is `node scripts/build-desktop-artifact.ts --platform win --target portable --arch x64` when electron-builder accepts that target. This Linux environment cannot run the Windows app, so a produced installer here would still be unvalidated on Windows.
+
 T3 Code is an "agent harness control surface". It enables control of the agents on your machine with a best-in-class mobile app ([iOS](https://apps.apple.com/us/app/t3-code-remote-claude-more/id6787819824), [Android](https://play.google.com/store/apps/details?id=com.t3tools.t3code)), [web app](https://app.t3.codes) and [Electron-based desktop app](https://t3.codes).
 
 Works with your subscriptions on Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity, and fx. If they're set up on your computer, T3 Code can control them.

@@ -5,6 +5,10 @@ import * as Option from "effect/Option";
 import * as Ref from "effect/Ref";
 import * as Schema from "effect/Schema";
 
+import {
+  EDITION_DESKTOP_BACKEND_PORT,
+  EDITION_INSTALLS_CLI_ON_PATH,
+} from "@t3tools/shared/edition";
 import * as NetService from "@t3tools/shared/Net";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as ElectronApp from "../electron/ElectronApp.ts";
@@ -40,7 +44,7 @@ import * as DesktopWslBackend from "../wsl/DesktopWslBackend.ts";
 import * as DesktopRendererHistory from "../telemetry/DesktopRendererHistory.ts";
 import * as HostProcess from "@t3tools/shared/HostProcess";
 
-const DEFAULT_DESKTOP_BACKEND_PORT = 3773;
+const DEFAULT_DESKTOP_BACKEND_PORT = EDITION_DESKTOP_BACKEND_PORT;
 const MAX_TCP_PORT = 65_535;
 const DESKTOP_BACKEND_PORT_PROBE_HOSTS = ["127.0.0.1", "0.0.0.0", "::"] as const;
 
@@ -195,16 +199,22 @@ const bootstrap = Effect.gen(function* () {
   yield* snapShot.initialize;
   // Only the user's own login shell PATH shows every t3 a new terminal runs; a fresh install has
   // no cached one. Without it, the command is left to Settings.
-  const installCli = (yield* DesktopCliCommand.DesktopCliCommand).installOnFirstLaunch;
-  yield* Effect.forkScoped(
-    (yield* DesktopShellEnvironment.DesktopShellEnvironment).awaitUserShellDiscovery.pipe(
-      Effect.flatMap((found) =>
-        found || environment.platform === "win32"
-          ? installCli
-          : logBootstrapInfo("skipped installing the t3 command without the shell PATH"),
+  if (EDITION_INSTALLS_CLI_ON_PATH) {
+    const installCli = (yield* DesktopCliCommand.DesktopCliCommand).installOnFirstLaunch;
+    yield* Effect.forkScoped(
+      (yield* DesktopShellEnvironment.DesktopShellEnvironment).awaitUserShellDiscovery.pipe(
+        Effect.flatMap((found) =>
+          found || environment.platform === "win32"
+            ? installCli
+            : logBootstrapInfo("skipped installing the t3 command without the shell PATH"),
+        ),
       ),
-    ),
-  );
+    );
+  } else {
+    yield* logBootstrapInfo(
+      "skipped installing the t3 command so this edition does not replace the official CLI or PATH",
+    );
+  }
 
   if (!settings.localEnvironmentEnabled) {
     yield* logBootstrapInfo("bootstrap skipping local environment (disabled in settings)");

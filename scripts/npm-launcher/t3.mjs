@@ -14,7 +14,8 @@ const SUPPORTED = ["darwin-arm64", "linux-arm64", "linux-x64", "win32-arm64", "w
 
 function t3Home() {
   const raw = (process.env.T3CODE_HOME || "").trim();
-  if (raw === "") return path.join(os.homedir(), ".t3");
+  // Keep in sync with EDITION_HOME_DIRECTORY_NAME. This launcher must not use official ~/.t3.
+  if (raw === "") return path.join(os.homedir(), ".t3-bilingual-test");
   if (raw === "~") return os.homedir();
   if (raw.startsWith("~/") || raw.startsWith("~\\")) return path.join(os.homedir(), raw.slice(2));
   return path.resolve(raw);

@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 
+import { useTranslate } from "../../i18n/locale";
 import { TYPOGRAPHY_ADVANCED_STORAGE_KEY } from "../../appearanceFonts";
 import { MOBILE_APP_URL } from "../../branding";
 import { isElectron } from "../../env";
@@ -128,10 +129,11 @@ export function WelcomePage({
   readonly environmentId: EnvironmentId;
   readonly onDone: (projectRef?: ScopedProjectRef) => void | Promise<void>;
 }) {
+  const { t } = useTranslate();
   const { environments } = useEnvironments();
   const label =
     environments.find((environment) => environment.environmentId === environmentId)?.label ??
-    "this computer";
+    t("this computer");
   const agentReady = useWelcomeAgents(environmentId).readyCount > 0;
   // The phone and `t3` on PATH belong to the primary computer, so only it offers them.
   const isPrimary = usePrimaryEnvironmentId() === environmentId;
@@ -270,11 +272,11 @@ export function WelcomePage({
         {isElectron ? <WorkspacePageHeader electron /> : null}
         <div className="min-h-0 flex-1 overflow-y-auto scrollbar-gutter-both">
           <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-6 pt-12 pb-8 sm:pt-20">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Welcome to T3 Code
+            <h1 className="text-2xl font-semibold tracking-tight text-pretty text-foreground">
+              {t("Welcome to T3 Code")}
             </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              Setting up <span className="text-foreground">{label}</span>.
+            <p className="mt-1.5 text-sm text-pretty text-muted-foreground">
+              {t("Setting up {name}.", { name: label })}
             </p>
             <div className="mt-10 border-t border-border/60">
               <AgentsSection
@@ -350,9 +352,10 @@ function WelcomeSection({
   readonly title: string;
   readonly children: ReactNode;
 }) {
+  const { t } = useTranslate();
   return (
     <section className="grid gap-x-10 border-b border-border/60 py-4 sm:grid-cols-[6rem_minmax(0,1fr)]">
-      <h2 className="text-sm leading-10 text-muted-foreground">{title}</h2>
+      <h2 className="text-sm leading-10 text-pretty text-muted-foreground">{t(title)}</h2>
       <div className="min-w-0">{children}</div>
     </section>
   );
@@ -907,6 +910,7 @@ function ProjectsSection({
 }
 
 function PhoneSection({ environmentId }: { readonly environmentId: EnvironmentId }) {
+  const { t } = useTranslate();
   const [open, setOpen] = useState(false);
   return (
     <WelcomeSection title="Phone">
@@ -916,10 +920,10 @@ function PhoneSection({ environmentId }: { readonly environmentId: EnvironmentId
             <SmartphoneIcon className="size-4" />
           </RowIcon>
           <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
-            Use T3 Code on your phone
+            {t("Use T3 Code on your phone")}
           </span>
           <CollapsibleTrigger render={<Button variant="ghost-muted" size="xs" />}>
-            {open ? "Hide" : "Set up"}
+            {open ? t("Hide") : t("Set up")}
             <ChevronDownIcon className={cn("size-3.5", open && "rotate-180")} />
           </CollapsibleTrigger>
         </div>
@@ -927,7 +931,9 @@ function PhoneSection({ environmentId }: { readonly environmentId: EnvironmentId
           <div className="flex items-center gap-8 pt-2 pb-3 pl-8">
             <ol className="min-w-0 flex-1 space-y-5">
               <PhoneStep step={1}>
-                <p className="text-sm text-foreground">Scan with your phone to get the app.</p>
+                <p className="text-sm text-pretty text-foreground">
+                  {t("Scan with your phone to get the app.")}
+                </p>
               </PhoneStep>
               <PhoneStep step={2}>
                 <PhoneConnectLink environmentId={environmentId} />
@@ -940,7 +946,7 @@ function PhoneSection({ environmentId }: { readonly environmentId: EnvironmentId
                 size={124}
                 level="M"
                 marginSize={2}
-                title="T3 Code app for iPhone and Android"
+                title={t("T3 Code app for iPhone and Android")}
               />
             </div>
           </div>

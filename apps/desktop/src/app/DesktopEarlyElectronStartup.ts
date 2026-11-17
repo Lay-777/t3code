@@ -1,3 +1,7 @@
+import {
+  EDITION_LINUX_DESKTOP_ENTRY_NAME,
+  EDITION_LINUX_DEV_DESKTOP_ENTRY_NAME,
+} from "@t3tools/shared/edition";
 import { fromLenientJson } from "@t3tools/shared/schemaJson";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
@@ -31,7 +35,7 @@ export interface EarlyLinuxElectronOptions {
 }
 
 export const resolveLinuxDesktopEntryName = (isDevelopment: boolean): string =>
-  isDevelopment ? "com.t3tools.T3Code.Development.desktop" : "com.t3tools.T3Code.desktop";
+  isDevelopment ? EDITION_LINUX_DEV_DESKTOP_ENTRY_NAME : EDITION_LINUX_DESKTOP_ENTRY_NAME;
 
 const trimNonEmpty = (value: string | undefined): string | null => {
   const trimmed = value?.trim();
