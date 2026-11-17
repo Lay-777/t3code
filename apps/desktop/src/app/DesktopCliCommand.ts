@@ -2,6 +2,7 @@
 import * as NodeFSP from "node:fs/promises";
 
 import type { DesktopCliCommandState } from "@t3tools/contracts";
+import { EDITION_INSTALLS_CLI_ON_PATH } from "@t3tools/shared/edition";
 import * as HostProcess from "@t3tools/shared/HostProcess";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
@@ -292,7 +293,13 @@ export const make = Effect.gen(function* () {
     ),
   );
 
+  const refuseCliInstall = () =>
+    fail(
+      "This unofficial edition does not install the t3 command, so it cannot replace the official T3 Code CLI or change PATH.",
+    );
+
   const install: DesktopCliCommand["Service"]["install"] = Effect.gen(function* () {
+    if (!EDITION_INSTALLS_CLI_ON_PATH) return yield* refuseCliInstall();
     if (!environment.isPackaged) return yield* fail("The t3 command needs an installed app.");
     yield* ensureLauncher;
     if (windows) {
@@ -393,6 +400,7 @@ export const make = Effect.gen(function* () {
   // One at a time, so Settings and onboarding cannot both append the line.
   const addToPathPermit = yield* Semaphore.make(1);
   const addToPath: DesktopCliCommand["Service"]["addToPath"] = Effect.gen(function* () {
+    if (!EDITION_INSTALLS_CLI_ON_PATH) return yield* refuseCliInstall();
     const installed = yield* installedAt;
     if (Option.isNone(installed) || !(yield* leadsHere(installed.value))) {
       return yield* fail("Install the t3 command first.");

@@ -2846,26 +2846,11 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
           "T3 Code lets commands run by terminals and coding agents use the camera.",
         NSMicrophoneUsageDescription:
           "T3 Code lets commands run by terminals and coding agents use the microphone.",
-        // macOS lists an app under Default web browser only when it opens web
-        // pages as documents as well as http and https links (see protocols).
-        CFBundleDocumentTypes: [
-          {
-            CFBundleTypeName: "Web page",
-            CFBundleTypeRole: "Viewer",
-            LSHandlerRank: "Alternate",
-            LSItemContentTypes: ["public.html", "public.xhtml"],
-          },
-        ],
       },
       protocols: [
         {
-          name: "T3 Code",
+          name: EDITION_PRODUCT_NAME,
           schemes: [EDITION_PROTOCOL_SCHEME],
-        },
-        {
-          name: "Web site URL",
-          schemes: ["http", "https"],
-          role: "Viewer",
         },
       ],
       ...(signed ? { sign: path.join(repoRoot, "scripts/sign-macos.ts") } : {}),
@@ -2964,6 +2949,13 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
     const winConfig: Record<string, unknown> = {
       target: [target],
       icon: "icon.ico",
+      // Register only this edition's scheme. The official app keeps t3code://.
+      protocols: [
+        {
+          name: EDITION_PRODUCT_NAME,
+          schemes: [EDITION_PROTOCOL_SCHEME],
+        },
+      ],
       // Smart App Control validates unpacked native libraries independently; sign them too.
       signExts: [".node", ".dll"],
       // Resource editing sets product icons even when code signing is disabled.
